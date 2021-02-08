@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,139 +6,246 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  static const String _title = 'iBus';
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mixed List',
-      home: RandomWords()
+      title: _title,
+      theme:
+      ThemeData(fontFamily: 'Raleway'),
+      home: MyStatefulWidget(),
     );
   }
 }
+class MyStatefulWidget extends StatefulWidget {
+  MyStatefulWidget({Key key}) : super(key: key);
 
-class RandomWords extends StatefulWidget{
   @override
-    _RandomWordsState createState() => _RandomWordsState();
+  _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
 }
 
-class _RandomWordsState extends State<RandomWords>{
+class _MyStatefulWidgetState extends State <MyStatefulWidget> {
+  int _selectedIndex = 0;
+  String _origenDir = "Dirección de origen";
+  String _destinoDir = "Dirección de destino";
+  String _name = "Nombre del lugar";
+  String _ruta = "A 112";
 
-  final List<WordPair> _suggestions = <WordPair>[];
-  final _saved = Set<WordPair>();
-  final TextStyle _biggerFont = const TextStyle(fontSize: 18);
+  final TextStyle _colorText = const TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold);
+  final TextStyle _mainHeading = const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold);
+  final TextStyle _subtitle = const TextStyle(color: Colors.black, fontSize: 14);
+  final TextStyle _idBus= const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold);
 
-  Widget _buildsuggestions(){
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemBuilder: (BuildContext context, int i){
-
-        if(i.isOdd){
-          return Divider();
-        }
-
-        final int index = i ~/ 2;
-
-        if(index >= _suggestions.length){
-          _suggestions.addAll(generateWordPairs().take(10));
-        }
-
-        return _buildRow(_suggestions[index]);
-        
-        }
-    );
-  }
-        
-  Widget _buildRow(WordPair pair){
-    final _alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(pair.asPascalCase, style: _biggerFont),
-      trailing: Icon(
-        _alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: _alreadySaved ? Colors.red : null,
-      ),
-      onTap: (){
-        setState(() {
-          if(_alreadySaved){
-            _saved.remove(pair);
-          }
-          else{
-            _saved.add(pair);
-          } 
-        });
-      },
-    );
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
-  void _pushSaved(){
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context){
-          final tiles = _saved.map(
-            (WordPair pair){
-            return ListTile(
-              title: Text(pair.asPascalCase, 
-              style: _biggerFont,)
-              );
-          },
-        );
-        final divided = ListTile.divideTiles(context:context, tiles: tiles).toList();
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text("Saved Suggestions"),
-          ),
-          body: ListView(children: divided),
-        );
-      },
-    )  
-      
+Widget _iconPlusHeading(nameIcon, labelTitle){
+  return Container(
+    child: Row(
+      children: <Widget>[
+        IconButton(
+          icon: Icon(nameIcon, color: Colors.black),
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints(),
+          onPressed: null,
+        ),
+        Text(labelTitle, style: _subtitle),
+      ],
+    ),
   );
+}
+Widget _optionsMenu() {
+    return new PopupMenuButton(
+        itemBuilder: (BuildContext context) => <PopupMenuItem<int>>[
+          new PopupMenuItem<int>(
+              value: 1,
+              child: new Text('Editar')),
+          new PopupMenuItem<int>(
+              value: 2,
+              child: new Text('Eliminar')),
+        ],
+    );
+ }
+Widget _buttonRoute(colorHex){
+  return Container(
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Color(colorHex),
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Text(_ruta, style: _idBus),
+  );
+}
+Widget _routeInfo(){
+    return Column(
+        children: <Widget>[
+          Container(
+            width: 250,
+            alignment: Alignment.center,
+            child: Row(
+                children: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.trip_origin, color: Color(0xffFF1884)),
+                      onPressed: null
+                  ),
+                  Container(
+                    child: Column(
+                        children: <Widget>[
+                          Text(_name, style: _mainHeading),
+                          Text(_origenDir , style: _subtitle),
+                        ]
+                    ),
+                  ),
+                ]
+            )
+          ),
+          Container(
+            width: 360,
+            alignment: Alignment.center,
+            margin: const EdgeInsets.fromLTRB(0,40,0,10),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 250,
+                  child: Column(
+                      children: <Widget>[
+                        Text(_name , style: _mainHeading),
+                        _iconPlusHeading(Icons.person_pin_circle, _origenDir),
+                        _iconPlusHeading(Icons.location_on_sharp,_destinoDir),
+                      ]
+                  ),
+                ),
+                Container(
+                  child: Column(
+                    children: <Widget>[
+                      _buttonRoute(0xffFF1884),
+                      Container(
+                        height: 6),
+                      _buttonRoute(0xffFF7C18),
+                    ],
+                  ),
+                ),
+                _optionsMenu(),
+              ],
+            ),
+          )
+        ],
+    );
+}
+String saveValue = "";
+Widget _campoTexto1(label){
+    return
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        child: TextField(
+          onChanged: (texto) {
+            saveValue = texto;
+          },
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            labelText: label,
+          ),
+        ),
+
+      );
+}
+  String value1 = "";
+  Widget _campoTexto2(label){
+    return
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        child: TextField(
+          onChanged: (texto) {
+            value1 = texto;
+          },
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            hintText: label,
+          ),
+        ),
+
+      );
+  }
+  String value2 = "";
+  Widget _campoTextoIcon(iconName, label){
+    return
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        child: TextField(
+          onChanged: (texto) {
+            value2 = texto;
+          },
+          decoration: InputDecoration(
+            icon: Icon(iconName, color: Colors.black),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            hintText: label,
+          ),
+        ),
+      );
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Nombres"),
-        actions: [
-          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved)
-        ],
+        title: Text('iBus', style: _colorText),
+        backgroundColor: Color(0xffF0BE28),
       ),
-      body: _buildsuggestions(),
+      body: Center(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(16),
+          children: <Widget>[
+            _routeInfo(),
+            _campoTexto1("Destino"),
+            _campoTexto2("Dirección de destino"),
+            _campoTextoIcon(Icons.person_pin_circle,"Dirección de Origen"),
+            _campoTextoIcon(Icons.location_on_sharp,"Dirección de Destino"),
+            OutlineButton(
+                onPressed: null,
+                disabledBorderColor: Color(0xffF0BE28),
+                child: Text("Añadir a favoritos", style: TextStyle(color: Color(0xffF0BE28))),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+            ),
+          ],
+        ),
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+          showUnselectedLabels: true,
+          items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, color: Colors.black),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.drive_eta_sharp, color: Colors.black),
+            label: 'Viajes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.credit_card_rounded, color: Colors.black),
+            label: 'Pasajes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: Colors.black),
+            label: 'Mi cuenta',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Color(0xffF0BE28),
+        onTap: _onItemTapped,
+      ),
     );
   }
-}
-abstract class ListItem {
-  /// The title line to show in a list item.
-  Widget buildTitle(BuildContext context);
-
-  /// The subtitle line, if any, to show in a list item.
-  Widget buildSubtitle(BuildContext context);
-}
-
-/// A ListItem that contains data to display a heading.
-class HeadingItem implements ListItem {
-  final String heading;
-
-  HeadingItem(this.heading);
-
-  Widget buildTitle(BuildContext context) {
-    return Text(
-      heading,
-      style: Theme.of(context).textTheme.headline5,
-    );
-  }
-
-  Widget buildSubtitle(BuildContext context) => null;
-}
-
-/// A ListItem that contains data to display a message.
-class MessageItem implements ListItem {
-  final String sender;
-  final String body;
-
-  MessageItem(this.sender, this.body);
-
-  Widget buildTitle(BuildContext context) => Text(sender);
-
-  Widget buildSubtitle(BuildContext context) => Text(body);
 }
